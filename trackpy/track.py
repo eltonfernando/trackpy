@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 from .kalman import KalmanBox
-from .core import Detection, BoundboxDetector, BoundboxDTO
+from .core import Detection, BoundboxDetector
 
 
 class DataTracker:
@@ -89,32 +89,32 @@ class ObjectTracked:
 
     def update(self, box_detection: BoundboxDetector) -> None:
         self.update_score(box_detection.get_score())
-        self.update_bndbox(box_detection.to_rect())
+        self.update_bounndbox(box_detection)
 
     def get_velocity(self) -> float:
         return self.velocity
 
     def get_xmin(self) -> int:
-        return int(self.boundbox_detection.box.x_min)
+        return int(self.boundbox_detection.x_min)
 
     def get_ymin(self) -> int:
-        return int(self.boundbox_detection.box.y_min)
+        return int(self.boundbox_detection.y_min)
 
     def get_xmax(self) -> int:
-        return int(self.boundbox_detection.box.x_max)
+        return int(self.boundbox_detection.x_max)
 
     def get_ymax(self) -> int:
-        return int(self.boundbox_detection.box.y_max)
+        return int(self.boundbox_detection.y_max)
 
     def get_center_tuple(self) -> Tuple[int, int]:
-        return self.boundbox_detection.box.to_center_tuple()
+        return self.boundbox_detection.to_center_tuple()
 
     def get_center(self) -> np.ndarray:
         center_x, center_y = self.get_center_tuple()
         return np.array([center_x, center_y], dtype=np.float32)
 
-    def update_bndbox(self, bndbox: BoundboxDTO) -> None:
-        if bndbox.empty():
+    def update_bounndbox(self, bndbox: BoundboxDetector) -> None:
+        if bndbox.is_box_empty():
             (
                 x_min,
                 x_velocity,
@@ -128,7 +128,7 @@ class ObjectTracked:
             self.boundbox_detection.set_rect(x_min, y_min, width, hieght)
             self.trace.append(self.get_center().astype(np.int32))
         else:
-            x, y, w, h = bndbox
+            x, y, w, h = bndbox.to_rect()
             (
                 x_min,
                 x_velocity,
